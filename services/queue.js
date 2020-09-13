@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const { promisify } = require('util')
 const randomBytesAsync = promisify(crypto.randomBytes)
 
-const timeoutConfig = 1e3 * 20
+const timeoutConfig = process.env.TIMEOUT
 const pendingMessages = {}
 const fifo = []
 const queue = {}
