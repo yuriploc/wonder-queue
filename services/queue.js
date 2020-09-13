@@ -2,8 +2,18 @@ const crypto = require('crypto')
 const { promisify } = require('util')
 const randomBytesAsync = promisify(crypto.randomBytes)
 
+const timeoutConfig = 1e3 * 20
+const pendingMessages = {}
 const fifo = []
 const queue = {}
+
+const releaseMessage = (msgId) => {
+  const found = fifo.findIndex((queueEl) => queueEl.id === msgId)
+  if (found !== -1) {
+    const elm = fifo[found]
+    fifo.splice(found, 1, { ...elm, available: true })
+  }
+}
 
 queue.append = async (message) => {
   const randomBytes = await randomBytesAsync(4)
@@ -38,6 +48,9 @@ queue.getAvailableMessages = (limit) => {
             message: queueEl.message,
           })
 
+          const releaseTimer = setTimeout(releaseMessage, timeoutConfig, queueEl.id)
+          pendingMessages[queueEl.id] = releaseTimer
+
           limitCounter++
         }
       }
@@ -49,7 +62,11 @@ queue.getAvailableMessages = (limit) => {
 queue.markProcessed = (ids) => {
   ids.forEach(id => {
     const found = fifo.findIndex((queueEl) => queueEl.id === id)
-    fifo.splice(found, 1)
+    if (found !== -1) {
+      fifo.splice(found, 1)
+      const pendingTimer = pendingMessages[id]
+      clearTimeout(pendingTimer)
+    }
   })
 }
 
