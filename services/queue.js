@@ -61,7 +61,7 @@ queue.getAvailableMessages = (limit) => {
 
 queue.markProcessed = (ids) => {
   ids.forEach(id => {
-    const found = fifo.findIndex((queueEl) => queueEl.id === id)
+    const found = fifo.findIndex((queueEl) => queueEl.id === id && !queueEl.available)
     if (found !== -1) {
       fifo.splice(found, 1)
       const pendingTimer = pendingMessages[id]
