@@ -12,7 +12,9 @@ router.post('/write', async (ctx) => {
 })
 
 router.get('/', async (ctx) => {
-  const { limit } = ctx.request.query
+  const limitQuery = Number(ctx.request.query.limit)
+  const limit = Number.isNaN(limitQuery) ? 1 : limitQuery
+
   const messagesToProcess = await queue.getAvailableMessages(limit)
 
   ctx.body = messagesToProcess

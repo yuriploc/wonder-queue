@@ -21,23 +21,29 @@ queue.append = async (message) => {
 queue.get = () => fifo
 
 queue.getAvailableMessages = (limit) => {
-  const availableMsgs = Promise.resolve(true)
-    .then(() => fifo.reduce((acc, queueEl) => {
+  let limitCounter = 0
+  const availableMessages = []
+
+  return Promise.resolve(true)
+    .then(() => {
+      for (const queueEl of fifo) {
+        if (limitCounter === limit) {
+          break
+        }
+
         if (queueEl.available) {
           queueEl.available = false
-          acc.push({
+          availableMessages.push({
             id: queueEl.id,
             message: queueEl.message,
           })
 
-          return acc
+          limitCounter++
         }
+      }
 
-        return acc
-      }, [])
-    )
-
-  return availableMsgs
+      return availableMessages
+    })
 }
 
 queue.markProcessed = (ids) => {
