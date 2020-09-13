@@ -10,8 +10,7 @@ const queue = {}
 const releaseMessage = (msgId) => {
   const found = fifo.findIndex((queueEl) => queueEl.id === msgId)
   if (found !== -1) {
-    const elm = fifo[found]
-    fifo.splice(found, 1, { ...elm, available: true })
+    fifo[found].available = true
   }
 }
 
@@ -48,6 +47,7 @@ queue.getAvailableMessages = (limit) => {
             message: queueEl.message,
           })
 
+          // this could be a middleware to run after the return
           const releaseTimer = setTimeout(releaseMessage, timeoutConfig, queueEl.id)
           pendingMessages[queueEl.id] = releaseTimer
 
