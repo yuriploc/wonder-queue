@@ -24,7 +24,7 @@ router.post('/done', async (ctx) => {
   const idsDone = ctx.request.body
   queue.markProcessed(idsDone)
 
-  ctx.body = 'OK'
+  ctx.body = StatusCodes.ACCEPTED
 })
 
 module.exports = router

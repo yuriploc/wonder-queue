@@ -1,7 +1,7 @@
 require("dotenv").config()
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser')
-const messages = require('./controllers/messages')
+const messages = require('./src/controllers/messages')
 
 const app = new Koa()
 
