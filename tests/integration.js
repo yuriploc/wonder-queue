@@ -63,7 +63,7 @@ test.serial('mark a message as processed', async t => {
 
   const { statusCode } = await got.post('messages/done', {
     prefixUrl: t.context.prefixUrl,
-    json: [id]
+    json: { messageId: id }
   })
   t.is(statusCode, 200)
 })
