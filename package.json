@@ -14,11 +14,19 @@
     "koa-yup-validator": "^1.0.7",
     "yup": "^0.29.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "ava": "^3.12.1",
+    "got": "^11.6.2",
+    "nodemon": "^2.0.4",
+    "nyc": "^15.1.0",
+    "test-listen": "^1.1.0"
+  },
   "scripts": {
     "start": "node app.js",
-    "dev": "npx nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon app.js",
+    "test": "ava --verbose --timeout=2m",
+    "test:watch": "ava --watch --verbose",
+    "coverage": "nyc npm run test"
   },
   "author": "Yuri Oliveira <yuri@omg.lol> (https://github.com/yuriploc)",
   "license": "MIT"

@@ -4,12 +4,14 @@ const yup = require('yup')
 const validate = require('koa-yup-validator')
 const queue = require('../services/queue')
 
+const STRING_MAX_LENGTH = Number(process.env.STRING_MAX_LENGTH)
+
 const router = new Router({ prefix: '/messages' })
 
 const schemas = {
   limit: yup.number().positive().default(1),
   write: yup.object().shape({
-    message: yup.string().max(2**53 - 1).required(),
+    message: yup.string().max(STRING_MAX_LENGTH).required(),
   }),
   done: yup.array().of(yup.string()).min(1).required()
 }
