@@ -13,7 +13,9 @@ const schemas = {
   write: yup.object().shape({
     message: yup.string().max(STRING_MAX_LENGTH).required(),
   }),
-  done: yup.array().of(yup.string()).min(1).required()
+  done: yup.object().shape({
+    messageId: yup.string().min(1).required(),
+  })
 }
 
 router.get('/', validate(schemas.limit, { path: 'request.query.limit' }), async (ctx) => {
@@ -32,8 +34,8 @@ router.post('/write', validate(schemas.write), async (ctx) => {
 })
 
 router.post('/done', validate(schemas.done) ,async (ctx) => {
-  const idsDone = ctx.request.body
-  queue.markProcessed(idsDone)
+  const { messageId } = ctx.request.body
+  queue.markProcessed(messageId)
 
   ctx.body = StatusCodes.ACCEPTED
 })
