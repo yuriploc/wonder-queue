@@ -21,3 +21,31 @@ Use the most efficient data structures and API endpoints possible to support a h
 • Use Node.js and ES6/ES7 as that is what we use (you may also use Typescript, but it is optional)
 
 • Add tests for the critical functionality of WonderQ
+
+## Coverage
+
+```
+------------------------------|---------|----------|---------|---------|-------------------
+File                          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+------------------------------|---------|----------|---------|---------|-------------------
+All files                     |    98.8 |       70 |     100 |   98.75 |
+ wonder-queue                 |     100 |      100 |     100 |     100 |
+  app.js                      |     100 |      100 |     100 |     100 |
+ wonder-queue/src/controllers |     100 |      100 |     100 |     100 |
+  messages.js                 |     100 |      100 |     100 |     100 |
+ wonder-queue/src/services    |   97.67 |       70 |     100 |    97.5 |
+  queue.js                    |   97.67 |       70 |     100 |    97.5 | 94
+------------------------------|---------|----------|---------|---------|-------------------
+```
+
+## TODO & Improvements
+
+Some changes can (always) be made to improve performance of the WonderQ. The project currently tries to have as few dependencies as possible, avoiding the use of helpful libraries as `lodash` and `uuid`, for example.
+
+The project is missing though, some observability features like logging. Although having tests and a good coverage counts, a CI would also be helpful. Linting would help Developer Experience and a formatter (hello, `prettier`) would avoid future fights.
+
+In order to achieve a better performance in a production environment, three major changes can be made:
+
+1. To wait until a specific threshold happens to remove all the processed messages from the queue. This means having an index to state that all the elements behind are already processed and it's safe to remove them all. And why not using `shift()` instead of `splice()`?
+2. Instead of creating the timer for the release timeout while looking for available messages, we could pass the message id in the context to another middleware make this call after the method `queue.getAvailableMessages` is complete.
+3. Clustering the application to better use the server cores and increasing the memory limit in order to be able to handle more messages.
