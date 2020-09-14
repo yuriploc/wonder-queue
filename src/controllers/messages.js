@@ -1,10 +1,8 @@
 const Router = require('@koa/router')
 const { StatusCodes } = require('http-status-codes')
-const yup = require('yup')
 const validate = require('koa-yup-validator')
 const queue = require('../services/queue')
-
-const STRING_MAX_LENGTH = Number(process.env.STRING_MAX_LENGTH)
+const schemas = require('../validators/messages')
 
 /**
  * Messages controller.
@@ -16,17 +14,6 @@ const STRING_MAX_LENGTH = Number(process.env.STRING_MAX_LENGTH)
   * @namespace MessagesRouter
   */
 const router = new Router({ prefix: '/messages' })
-
-// TODO: the schemas could be in its separate folder
-const schemas = {
-  limit: yup.number().positive().default(1),
-  write: yup.object().shape({
-    message: yup.string().max(STRING_MAX_LENGTH).required(),
-  }),
-  done: yup.object().shape({
-    messageId: yup.string().min(1).required(),
-  })
-}
 
 /**
  * It returns all available messages, starting from the oldest (FIFO).
