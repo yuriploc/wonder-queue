@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>services/queue.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_controllers_messages.html">src/controllers/messages</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_services_queue.html">src/services/queue</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html">MessagesRouter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~GET/messages">GET /messages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/done">POST /messages/done</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/write">POST /messages/write</a></span></li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html">Queue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.append">queue.append</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.getAvailableMessages">queue.getAvailableMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.markProcessed">queue.markProcessed</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.releaseMessage">releaseMessage</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">services/queue.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const crypto = require('crypto')
+const { promisify } = require('util')
+const randomBytesAsync = promisify(crypto.randomBytes)
+
+const timeoutConfig = process.env.TIMEOUT
+const pendingMessages = {}
+
+/**
+ * Messages controller.
+ * @module src/services/queue
+ */
+
+/**
+ * @const
+ * @namespace Queue
+ */
+const queue = {}
+
+/**
+ * @typedef QueueElement
+ * @memberof module:src/services/queue~Queue
+ * @type {object}
+ * @property {string} id - The message ID.
+ * @property {boolean} available - If the message is available to be consumed.
+ * @property {string} message - The message itself.
+ */
+
+const fifo = []
+
+/**
+ * Set a message as available after a predefined timeout.
+ *
+ * @function
+ * @memberof module:src/services/queue~Queue
+ * @param {!string} msgId - The message ID
+ */
+const releaseMessage = (msgId) => {
+  const found = fifo.findIndex((queueEl) => queueEl.id === msgId)
+  if (found !== -1) {
+    fifo[found].available = true
+  }
+  console.log(`### Timeout!`)
+  console.log(queue.get())
+}
+
+/**
+ * Append a message at the end of the queue. It becomes available as
+ * soon as it's added.
+ *
+ * @function
+ * @memberof module:src/services/queue~Queue
+ * @param {!string} message - The message to add at the end of the queue
+ * @returns {!string} The message ID
+ */
+queue.append = async (message) => {
+  const randomBytes = await randomBytesAsync(4)
+  const msgId = randomBytes.toString('hex')
+
+  fifo.push({
+    available: true,
+    id: msgId,
+    message,
+  })
+
+  return msgId
+}
+
+/**
+ * Returns the queue. Useful during development.
+ *
+ * @returns {!Array&lt;QueueElement>}
+ */
+queue.get = () => fifo
+
+/**
+ * Retrieves all available messages, starting from the oldest (FIFO), marking the
+ * available ones as unavailable for next consumers. It has an important
+ * side effect that is to start the timer to release a message if it's not
+ * processed in a timely manner.
+ *
+ * @function
+ * @memberof module:src/services/queue~Queue
+ * @param {!number} limit - The max number of messages to be retrieved
+ * @returns {!Array} Similar to the `QueueElement`, but without the internal `available` property
+ */
+queue.getAvailableMessages = (limit) => {
+  let limitCounter = 0
+  const availableMessages = []
+
+  return Promise.resolve(true)
+    .then(() => {
+      for (const queueEl of fifo) {
+        if (limitCounter === limit) {
+          break
+        }
+
+        if (queueEl.available) {
+          queueEl.available = false
+          availableMessages.push({
+            id: queueEl.id,
+            message: queueEl.message,
+          })
+
+          // TODO: this could be a middleware to run after the return
+          const releaseTimer = setTimeout(releaseMessage, timeoutConfig, queueEl.id)
+          pendingMessages[queueEl.id] = releaseTimer
+
+          limitCounter++
+        }
+      }
+
+      return availableMessages
+    })
+}
+
+/**
+ * Removes a message from the key by its `id` property.
+ *
+ * @function
+ * @memberof module:src/services/queue~Queue
+ * @param {!string} id - The message ID to remove from the queue
+ */
+queue.markProcessed = (id) => {
+  const found = fifo.findIndex((queueEl) => queueEl.id === id &amp;&amp; !queueEl.available)
+  if (found !== -1) {
+    fifo.splice(found, 1)
+    const pendingTimer = pendingMessages[id]
+    clearTimeout(pendingTimer)
+  }
+}
+
+module.exports = queue
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Sun Sep 13 2020 23:25:05 GMT-0300 (Brasilia Standard Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
