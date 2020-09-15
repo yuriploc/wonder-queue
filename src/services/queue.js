@@ -1,8 +1,8 @@
-const crypto = require('crypto')
-const { promisify } = require('util')
-const randomBytesAsync = promisify(crypto.randomBytes)
+const { v4: uuidv4 } = require('uuid')
 
-const timeoutConfig = process.env.TIMEOUT
+const timeoutConfig = Number(process.env.TIMEOUT)
+const doneInterval = Number(process.env.DONE_INTERVAL)
+
 const pendingMessages = {}
 
 /**
@@ -22,13 +22,14 @@ const queue = {}
  * @type {object}
  * @property {string} id - The message ID.
  * @property {boolean} available - If the message is available to be consumed.
+ * @property {boolean} done - If the message was successfully processed.
  * @property {string} message - The message itself.
  */
 
-const fifo = []
+let fifo = []
 
 /**
- * Set a message as available after a predefined timeout.
+ * Sets a message as available after a predefined timeout.
  *
  * @function
  * @memberof module:src/services/queue~Queue
@@ -42,20 +43,50 @@ const releaseMessage = (msgId) => {
 }
 
 /**
- * Append a message at the end of the queue. It becomes available as
+ * Removes all processed messages from the beginning of the queue up to
+ * the first that wasn't processed yet. This relieves the load from
+ * the `markProcessed` method.
+ *
+ * @function
+ * @memberof module:src/services/queue~Queue
+ */
+const clearDoneMessages = () => {
+  const found = fifo.findIndex((queueEl) => queueEl.done === false)
+  if (found === 0) {
+    return
+  }
+  if (found > 0) {
+    fifo = fifo.slice(found)
+  } else {
+    fifo = []
+  }
+}
+
+/**
+ * Starts the interval to run the `clearDoneMessages` method
+ *
+ * @function
+ * @memberof module:src/services/queue~Queue
+ */
+const startClearInterval = () => {
+  setInterval(clearDoneMessages, doneInterval)
+}
+
+/**
+ * Appends a message at the end of the queue. It becomes available as
  * soon as it's added.
  *
  * @function
  * @memberof module:src/services/queue~Queue
  * @param {!string} message - The message to add at the end of the queue
- * @returns {!string} The message ID
+ * @returns {!string} The message ID (UUID V4)
  */
 queue.append = async (message) => {
-  const randomBytes = await randomBytesAsync(4)
-  const msgId = randomBytes.toString('hex')
+  const msgId = uuidv4()
 
   fifo.push({
     available: true,
+    done: false,
     id: msgId,
     message,
   })
@@ -121,10 +152,12 @@ queue.getAvailableMessages = (limit) => {
 queue.markProcessed = (id) => {
   const found = fifo.findIndex((queueEl) => queueEl.id === id && !queueEl.available)
   if (found !== -1) {
-    fifo.splice(found, 1)
+    fifo[found].done = true
     const pendingTimer = pendingMessages[id]
     clearTimeout(pendingTimer)
   }
 }
+
+startClearInterval()
 
 module.exports = queue

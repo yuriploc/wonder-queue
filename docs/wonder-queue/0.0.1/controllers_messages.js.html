@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_controllers_messages.html">src/controllers/messages</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_services_queue.html">src/services/queue</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html">MessagesRouter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~GET/messages">GET /messages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/done">POST /messages/done</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/write">POST /messages/write</a></span></li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html">Queue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.append">queue.append</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.getAvailableMessages">queue.getAvailableMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.markProcessed">queue.markProcessed</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.releaseMessage">releaseMessage</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_controllers_messages.html">src/controllers/messages</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_services_queue.html">src/services/queue</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html">MessagesRouter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~GET/messages">GET /messages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/done">POST /messages/done</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/write">POST /messages/write</a></span></li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html">Queue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.clearDoneMessages">clearDoneMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.append">queue.append</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.getAvailableMessages">queue.getAvailableMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.markProcessed">queue.markProcessed</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.releaseMessage">releaseMessage</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.startClearInterval">startClearInterval</a></span></li>
 </nav>
 
 <div id="main">
@@ -41,11 +41,9 @@
         <article>
             <pre class="prettyprint source linenums"><code>const Router = require('@koa/router')
 const { StatusCodes } = require('http-status-codes')
-const yup = require('yup')
 const validate = require('koa-yup-validator')
 const queue = require('../services/queue')
-
-const STRING_MAX_LENGTH = Number(process.env.STRING_MAX_LENGTH)
+const schemas = require('../validators/messages')
 
 /**
  * Messages controller.
@@ -58,16 +56,6 @@ const STRING_MAX_LENGTH = Number(process.env.STRING_MAX_LENGTH)
   */
 const router = new Router({ prefix: '/messages' })
 
-const schemas = {
-  limit: yup.number().positive().default(1),
-  write: yup.object().shape({
-    message: yup.string().max(STRING_MAX_LENGTH).required(),
-  }),
-  done: yup.object().shape({
-    messageId: yup.string().min(1).required(),
-  })
-}
-
 /**
  * It returns all available messages, starting from the oldest (FIFO).
  *
@@ -75,7 +63,7 @@ const schemas = {
  * @function
  * @memberof module:src/controllers/messages~MessagesRouter
  *
- * @inner AZSD
+ * @inner
  * @param {!string} path - Relative route path
  * @param {!callback} middleware - Validator middleware
  * @param {!callback} middleware - Route logic
@@ -84,9 +72,6 @@ router.get('/', validate(schemas.limit, { path: 'request.query.limit' }), async 
   const { limit } = ctx.request.query
 
   const messagesToProcess = await queue.getAvailableMessages(limit)
-
-  console.log(`### ${ctx.method} ${ctx.url}`)
-  console.log(queue.get())
 
   ctx.body = messagesToProcess
 })
@@ -107,8 +92,6 @@ router.post('/write', validate(schemas.write), async (ctx) => {
   const { message } = ctx.request.body
   const messageId = await queue.append(message)
 
-  console.log(`### ${ctx.method} ${ctx.url}`)
-  console.log(queue.get())
   ctx.body = messageId
 })
 
@@ -128,8 +111,6 @@ router.post('/done', validate(schemas.done) ,async (ctx) => {
   const { messageId } = ctx.request.body
   queue.markProcessed(messageId)
 
-  console.log(`### ${ctx.method} ${ctx.url}`)
-  console.log(queue.get())
   ctx.body = StatusCodes.ACCEPTED
 })
 
@@ -146,7 +127,7 @@ module.exports = router
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Sun Sep 13 2020 23:25:05 GMT-0300 (Brasilia Standard Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Tue Sep 15 2020 01:18:15 GMT-0300 (Brasilia Standard Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

@@ -39,7 +39,7 @@ test.serial('[get /messages] without passing limit querystring', async t => {
   t.is(typeof id, 'string')
 })
 
-test.serial('gets a message passing a limit querystring', async t => {
+test.serial('[get /messages?limit=N] gets a message passing a limit querystring', async t => {
   const { statusCode, body } = await got('messages', {
     prefixUrl: t.context.prefixUrl,
     searchParams: { limit: 2 }
@@ -50,8 +50,8 @@ test.serial('gets a message passing a limit querystring', async t => {
   t.is(res instanceof Array, true)
 })
 
-test.serial('mark a message as processed', async t => {
-  await setTimeoutPromise(Number(process.env.TIMEOUT) + 10e3, 'foobar')
+test.serial('[post /messages/done] mark a message as processed', async t => {
+  await setTimeoutPromise(Number(process.env.TIMEOUT) + 10e3, null)
   const {
     statusCode: statusGet,
     body,

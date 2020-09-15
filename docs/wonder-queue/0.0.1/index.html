@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_controllers_messages.html">src/controllers/messages</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_services_queue.html">src/services/queue</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html">MessagesRouter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~GET/messages">GET /messages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/done">POST /messages/done</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/write">POST /messages/write</a></span></li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html">Queue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.append">queue.append</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.getAvailableMessages">queue.getAvailableMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.markProcessed">queue.markProcessed</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.releaseMessage">releaseMessage</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_controllers_messages.html">src/controllers/messages</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_services_queue.html">src/services/queue</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html">MessagesRouter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~GET/messages">GET /messages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/done">POST /messages/done</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/write">POST /messages/write</a></span></li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html">Queue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.clearDoneMessages">clearDoneMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.append">queue.append</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.getAvailableMessages">queue.getAvailableMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.markProcessed">queue.markProcessed</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.releaseMessage">releaseMessage</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.startClearInterval">startClearInterval</a></span></li>
 </nav>
 
 <div id="main">
@@ -60,10 +60,29 @@
 <p>• Discuss what steps would you need to take in order to scale this system to make it production ready for very high volume? What are potential issues in production that might arise and how would you go about implementing solutions? For each of the previous questions, which tools/technologies would you use and why? Please be detailed.</p>
 <p>• Use Node.js and ES6/ES7 as that is what we use (you may also use Typescript, but it is optional)</p>
 <p>• Add tests for the critical functionality of WonderQ</p>
+<h2>Coverage</h2>
+<pre class="prettyprint source"><code>------------------------------|---------|----------|---------|---------|-------------------
+File                          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+------------------------------|---------|----------|---------|---------|-------------------
+All files                     |    98.8 |       70 |     100 |   98.75 |
+ wonder-queue                 |     100 |      100 |     100 |     100 |
+  app.js                      |     100 |      100 |     100 |     100 |
+ wonder-queue/src/controllers |     100 |      100 |     100 |     100 |
+  messages.js                 |     100 |      100 |     100 |     100 |
+ wonder-queue/src/services    |   97.67 |       70 |     100 |    97.5 |
+  queue.js                    |   97.67 |       70 |     100 |    97.5 | 94
+------------------------------|---------|----------|---------|---------|-------------------
+</code></pre>
 <h2>TODO &amp; Improvements</h2>
-<ul>
-<li></li>
-</ul></article>
+<p>Some changes can (always) be made to improve performance of the WonderQ. The project currently tries to have as few dependencies as possible, avoiding the use of helpful libraries as <code>lodash</code> and <code>uuid</code>, for example.</p>
+<p>The project is missing though, some observability features like logging. Although having tests and a good coverage counts, a CI would also be helpful. Linting would help Developer Experience and a formatter (hello, <code>prettier</code>) would avoid future fights.</p>
+<p>In order to achieve a better performance in a production environment, four major changes can be made:</p>
+<ol>
+<li>To wait until a specific threshold happens to remove all the processed messages from the queue. This means having an index to state that all the elements behind are already processed and it's safe to remove them all. And why not using <code>shift()</code> instead of <code>splice()</code>?</li>
+<li>Instead of creating the timer for the release timeout while looking for available messages, we could pass the message id in the context to another middleware make this call after the method <code>queue.getAvailableMessages</code> is complete.</li>
+<li>Clustering the application to better use the server cores and increasing the memory limit in order to be able to handle more messages.</li>
+<li>Adding a persistence layer to avoid the ephemeral state we currently have, and adding the ability to get the queue up without loosing data after an update, restart or a failure. This could be achieved by using a NoSQL database like Mongo or even Firebase to persist the data.</li>
+</ol></article>
     </section>
 
 
@@ -76,7 +95,7 @@
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Sun Sep 13 2020 23:25:05 GMT-0300 (Brasilia Standard Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Tue Sep 15 2020 01:18:15 GMT-0300 (Brasilia Standard Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

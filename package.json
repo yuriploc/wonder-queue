@@ -14,6 +14,7 @@
     "koa-bodyparser": "^4.3.0",
     "koa-helmet": "^5.2.0",
     "koa-yup-validator": "^1.0.7",
+    "uuid": "^8.3.0",
     "yup": "^0.29.3"
   },
   "devDependencies": {

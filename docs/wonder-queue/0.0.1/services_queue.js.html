@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_controllers_messages.html">src/controllers/messages</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_services_queue.html">src/services/queue</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html">MessagesRouter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~GET/messages">GET /messages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/done">POST /messages/done</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/write">POST /messages/write</a></span></li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html">Queue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.append">queue.append</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.getAvailableMessages">queue.getAvailableMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.markProcessed">queue.markProcessed</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.releaseMessage">releaseMessage</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_controllers_messages.html">src/controllers/messages</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-src_services_queue.html">src/services/queue</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html">MessagesRouter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~GET/messages">GET /messages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/done">POST /messages/done</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_controllers_messages-MessagesRouter.html#~POST/messages/write">POST /messages/write</a></span></li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html">Queue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.clearDoneMessages">clearDoneMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.append">queue.append</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.getAvailableMessages">queue.getAvailableMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.queue.markProcessed">queue.markProcessed</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.releaseMessage">releaseMessage</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-src_services_queue-Queue.html#.startClearInterval">startClearInterval</a></span></li>
 </nav>
 
 <div id="main">
@@ -39,11 +39,11 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const crypto = require('crypto')
-const { promisify } = require('util')
-const randomBytesAsync = promisify(crypto.randomBytes)
+            <pre class="prettyprint source linenums"><code>const { v4: uuidv4 } = require('uuid')
 
-const timeoutConfig = process.env.TIMEOUT
+const timeoutConfig = Number(process.env.TIMEOUT)
+const doneInterval = Number(process.env.DONE_INTERVAL)
+
 const pendingMessages = {}
 
 /**
@@ -63,13 +63,14 @@ const queue = {}
  * @type {object}
  * @property {string} id - The message ID.
  * @property {boolean} available - If the message is available to be consumed.
+ * @property {boolean} done - If the message was successfully processed.
  * @property {string} message - The message itself.
  */
 
-const fifo = []
+let fifo = []
 
 /**
- * Set a message as available after a predefined timeout.
+ * Sets a message as available after a predefined timeout.
  *
  * @function
  * @memberof module:src/services/queue~Queue
@@ -80,25 +81,53 @@ const releaseMessage = (msgId) => {
   if (found !== -1) {
     fifo[found].available = true
   }
-  console.log(`### Timeout!`)
-  console.log(queue.get())
 }
 
 /**
- * Append a message at the end of the queue. It becomes available as
+ * Removes all processed messages from the beginning of the queue up to
+ * the first that wasn't processed yet. This relieves the load from
+ * the `markProcessed` method.
+ *
+ * @function
+ * @memberof module:src/services/queue~Queue
+ */
+const clearDoneMessages = () => {
+  const found = fifo.findIndex((queueEl) => queueEl.done === false)
+  if (found === 0) {
+    return
+  }
+  if (found > 0) {
+    fifo = fifo.slice(found)
+  } else {
+    fifo = []
+  }
+}
+
+/**
+ * Starts the interval to run the `clearDoneMessages` method
+ *
+ * @function
+ * @memberof module:src/services/queue~Queue
+ */
+const startClearInterval = () => {
+  setInterval(clearDoneMessages, doneInterval)
+}
+
+/**
+ * Appends a message at the end of the queue. It becomes available as
  * soon as it's added.
  *
  * @function
  * @memberof module:src/services/queue~Queue
  * @param {!string} message - The message to add at the end of the queue
- * @returns {!string} The message ID
+ * @returns {!string} The message ID (UUID V4)
  */
 queue.append = async (message) => {
-  const randomBytes = await randomBytesAsync(4)
-  const msgId = randomBytes.toString('hex')
+  const msgId = uuidv4()
 
   fifo.push({
     available: true,
+    done: false,
     id: msgId,
     message,
   })
@@ -164,11 +193,13 @@ queue.getAvailableMessages = (limit) => {
 queue.markProcessed = (id) => {
   const found = fifo.findIndex((queueEl) => queueEl.id === id &amp;&amp; !queueEl.available)
   if (found !== -1) {
-    fifo.splice(found, 1)
+    fifo[found].done = true
     const pendingTimer = pendingMessages[id]
     clearTimeout(pendingTimer)
   }
 }
+
+startClearInterval()
 
 module.exports = queue
 </code></pre>
@@ -183,7 +214,7 @@ module.exports = queue
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Sun Sep 13 2020 23:25:05 GMT-0300 (Brasilia Standard Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Tue Sep 15 2020 01:18:15 GMT-0300 (Brasilia Standard Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
